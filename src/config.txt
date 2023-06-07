@@ -1,0 +1,7 @@
+# Machine 1
+IP: 192.168.0.1
+Port: 54321
+
+# Machine 2
+IP: 192.168.0.2
+Port: 12345
