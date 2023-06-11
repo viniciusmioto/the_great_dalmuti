@@ -1,4 +1,5 @@
 import socket
+import ast
 
 def send_message(message, address, port):
     # Create a UDP socket
@@ -6,8 +7,8 @@ def send_message(message, address, port):
 
     try:
         # Send the message
-        sock.sendto(message.encode(), (address, port))
-        print("Message sent successfully!")
+        str_message = str(message)
+        sock.sendto(str_message.encode(), (address, port))
     except socket.error as e:
         print("Error while sending message:", e)
     finally:
@@ -21,13 +22,11 @@ def receive_message(port):
     try:
         # Bind the socket to the specified port
         sock.bind(('', port))
-        print("Listening for incoming messages...")
-
         # Receive messages continuously
         while True:
-            data, addr = sock.recvfrom(1024)  # Adjust buffer size as needed
-            message = data.decode()
-            print(f"Received message from {addr}: {message}")
+            data, addr = sock.recvfrom(2048)  # Adjust buffer size as needed
+            res = ast.literal_eval(data.decode())
+            return res
             break
     
     except socket.error as e:

@@ -27,3 +27,9 @@ def get_machine_config(num):
             config[key] = int(value)
     
     return config
+
+
+def get_players_amout():
+    with open('config.txt', 'r') as file:
+        lines = file.readlines()
+    return int(lines[0].strip().split()[1])
