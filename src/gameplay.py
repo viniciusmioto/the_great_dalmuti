@@ -36,7 +36,32 @@ def get_cards():
     return deck
 
 
-def make_move(player_deck):
+def verify_cards(selected_cards):
+    # Lista menor que 2 não precisa de verificação
+    if len(selected_cards) < 2:
+        return True
+
+    # Obtem o número de referência para comparação
+    
+    # Se o primeiro não for um Jester, ele é o número de referência
+    if selected_cards[0][0] != 13:
+        reference_number = selected_cards[0][0]
+    # Se o primeiro for um Jester, mas a lista tem tamanho 2
+    elif len(selected_cards) == 2:
+        return True
+    # Se o segundo não for um Jester, ele é o número de referência
+    elif selected_cards[1][0] != 13:
+        reference_number = selected_cards[1][0]
+
+    # Check if all tuples in the list have the same number as the reference number
+    for card in selected_cards[1:]:
+        if card[0] != reference_number and card[0] != 13:
+            return False
+
+    return True
+
+
+def make_move(machine_number, player_deck):
     """
     -> Realiza a jogada do jogador da vez
     :param player_deck: cartas do jogador
@@ -46,6 +71,8 @@ def make_move(player_deck):
     selected_cards = []
 
     while True:
+        ui.show_deck(machine_number, player_deck, "hand")
+
         player_move = input(
             "\nEscolha suas cartas para jogar (ou digite 'fim' para encerrar): \n"
         )
@@ -62,7 +89,12 @@ def make_move(player_deck):
                 )
                 if card:
                     selected_cards.append(card)
-                    player_deck.remove(card)
+
+                    if verify_cards(selected_cards):
+                        player_deck.remove(card)
+                    else:
+                        selected_cards.remove(card)
+                        ui.print_warning("Cartas não possuem o mesmo número ou não são Jesters.")
                 else:
                     ui.print_warning("Carta não pertence ao seu deck.")
             else:
@@ -70,9 +102,13 @@ def make_move(player_deck):
         except ValueError:
             ui.print_warning("Entrada inválida.")
 
-    print("Cartas Restantes: \n")
-    for c in player_deck:
-        ui.print_deck(c)
+        ui.show_deck(machine_number, selected_cards, "selection")
+
+    ui.clear_screen()
+
+    ui.show_deck(machine_number, selected_cards, "discard")
+
+    ui.show_deck(machine_number, player_deck, "hand")
 
     return selected_cards
 

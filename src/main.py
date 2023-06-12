@@ -2,7 +2,6 @@ import machines as machine
 import gameplay as game
 import communication as net
 import interface as ui
-from message import Message
 
 
 machine_number = int(input("Número da Máquina: \n"))
@@ -16,12 +15,8 @@ if machine_number == 1:
     # faz o carteado
     player_deck = game.deal_cards(players_qtd, deck, machine_info)
 
-    print(f"O Deck do jogador {machine_number} é\n")
-    for c in player_deck:
-        ui.print_deck(c)
-
     # faz a primeira jogada
-    player_move = game.make_move(player_deck)
+    player_move = game.make_move(machine_number, player_deck)
 
     net.send_player_move(machine_info, machine_number, player_move)
 
@@ -43,16 +38,11 @@ while True:
             # recebe o deck e mostra na tela
             player_deck = recv_message["move_info"]["deck"]
 
-            print(f"O Deck do jogador {machine_number} é\n")
-            for c in player_deck:
-                ui.print_deck(c)
+            ui.show_deck(machine_number, player_deck, "hand")
 
         # jogada: verifica a jogada e mostra na tela
         elif recv_message["move_info"]["info"] == "move":
-            print(f'\nO jogador {recv_message["move_info"]["machine_number"]} jogou\n')
-
-            for c in recv_message["move_info"]["player_move"]:
-                ui.print_move(c)
+            ui.show_deck(recv_message["move_info"]["machine_number"], recv_message["move_info"]["player_move"], "opponent")
 
         net.send_message(
             recv_message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
@@ -66,6 +56,6 @@ while True:
 
     # esta com o bastao e deve fazer a jogada
     else:
-        player_move = game.make_move(player_deck)
+        player_move = game.make_move(machine_number, player_deck)
 
         net.send_player_move(machine_info, machine_number, player_move)

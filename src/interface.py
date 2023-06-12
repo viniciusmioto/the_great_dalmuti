@@ -1,3 +1,5 @@
+import os
+
 font_colour = {
     "black": "\033[1;30m",
     "purple": "\033[1;31m",
@@ -32,19 +34,43 @@ def print_info(msg):
     print(f'{font("cyan")}INFO: {msg}{font("clear")}')
 
 
-def print_deck(deck):
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def print_deck(deck, font_color, new_line=True):
     """
     -> This function print the deck
     :param deck: list of cards
     :return: print the deck
-    """
-    print(f'{font("purple")}{deck}{font("clear")}')
+    """ 
+
+    if new_line:
+        print(f'{font(font_color)}{deck}{font("clear")}')
+    else:
+        print(f'{font(font_color)}{deck}{font("clear")}', end=" ")
 
 
-def print_move(deck):
-    """
-    -> This function print the deck
-    :param deck: list of cards
-    :return: print the deck
-    """
-    print(f'{font("cyan")}{deck}{font("clear")}')
+def show_deck(machine_number, player_deck, deck_type):
+
+    if deck_type == "hand":
+        color = "purple"
+        print(f"Deck do jogador {machine_number}:")
+    elif deck_type == "opponent":
+        print(f"O jogador {machine_number} descartou:")
+        color = "cyan"
+    elif deck_type == "selection":
+        print(f"Cartas selecionadas:")
+        color = "green"
+    else:
+        print(f"Você descartou:")
+        color = "green"
+
+    previous_number = None
+    for card in player_deck:
+        if card[0] != previous_number:
+            print()
+        print_deck(card, color, new_line=False)
+        previous_number = card[0]
+
+    print("\n")
