@@ -39,3 +39,12 @@ def print_deck(deck):
     :return: print the deck
     """
     print(f'{font("purple")}{deck}{font("clear")}')
+
+
+def print_move(deck):
+    """
+    -> This function print the deck
+    :param deck: list of cards
+    :return: print the deck
+    """
+    print(f'{font("cyan")}{deck}{font("clear")}')

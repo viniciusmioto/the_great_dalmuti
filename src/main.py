@@ -23,64 +23,49 @@ if machine_number == 1:
     # faz a primeira jogada
     player_move = game.make_move(player_deck)
 
-    move = {"info": "move", "machine_number": machine_number, "move": player_move}
-
-    message = Message(
-        origin=machine_info["ADDRESS"], destiny=machine_info["ADDRESS"], move_info=move
-    )
-
-    net.send_message(
-        message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
-    )  # faz a primeira jogada
+    net.send_player_move(machine_info, machine_number, player_move)
 
 
-while 1:
+while True:
     recv_message = net.receive_message(machine_info["RECV_PORT"])
     recv_message["receive_confirm"] = 1
 
+    # se a mensagem nao for da propria maquina ou for diferente do bastao, passa pra frente
     if (
         recv_message["origin"] != machine_info["ADDRESS"]
         and recv_message["move_info"] != "bastao"
-    ):  # se a mensagem nao for da propria maquina ou for diferente do bastao, passa pra frente
+    ):
+        # carteado: verifica se o destino está correto e se contem o deck
         if (
             recv_message["destiny"] == machine_info["ADDRESS"]
             and recv_message["move_info"]["info"] == "deck"
         ):
+            # recebe o deck e mostra na tela
             player_deck = recv_message["move_info"]["deck"]
 
             print(f"O Deck do jogador {machine_number} é\n")
             for c in player_deck:
                 ui.print_deck(c)
 
+        # jogada: verifica a jogada e mostra na tela
         elif recv_message["move_info"]["info"] == "move":
-            # verificar a jogada e atualizar
             print(f'\nO jogador {recv_message["move_info"]["machine_number"]} jogou\n')
 
-            for c in recv_message["move_info"]["move"]:
-                ui.print_deck(c)
+            for c in recv_message["move_info"]["player_move"]:
+                ui.print_move(c)
 
         net.send_message(
             recv_message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
         )
 
-    elif (
-        recv_message["origin"] == machine_info["ADDRESS"]
-    ):  # se recebeu a mensagem que enviou, então passa o bastao
+    # se recebeu a mensagem que enviou, então passa o bastao
+    elif recv_message["origin"] == machine_info["ADDRESS"]:
         print(f"O jogador {machine_number} finalizou a jogada...\n")
 
-        message = Message(origin=machine_info["ADDRESS"], move_info="bastao", receive_confirm=1)
+        net.send_token(machine_info)
 
-        net.send_message(
-            message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
-        )  # passou o bastao
-
-    else:  # esta com o bastao e deve fazer a jogada
+    # esta com o bastao e deve fazer a jogada
+    else:
         player_move = game.make_move(player_deck)
 
-        move = {"info": "move", "machine_number": machine_number, "move": player_move}
-
-        message = Message(origin=machine_info["ADDRESS"], move_info=move)
-
-        net.send_message(
-            message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
-        )
+        net.send_player_move(machine_info, machine_number, player_move)
