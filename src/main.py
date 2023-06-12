@@ -1,4 +1,4 @@
-import machines as config
+import machines as machine
 import gameplay as game
 import communication as net
 import interface as ui
@@ -6,48 +6,15 @@ from message import Message
 
 
 machine_number = int(input("Número da Máquina: \n"))
-machine_info = config.get_machine_config(machine_number)
-players_qtd = config.get_players_amout()
+machine_info = machine.get_machine_config(machine_number)
+players_qtd = machine.get_players_amout()
 player_deck = []
 deck = game.get_cards()
-card_per_player = 80 // players_qtd  # sempre vai ser 80 cartas pq ta na regra
 
+# se for a primeira maquina, faz o carteado (dealer)
 if machine_number == 1:
     # faz o carteado
-    for player in range(players_qtd - 1):
-        player_info = config.get_machine_config(
-            player + 2
-        )  # player + 1 para skipar o primeiro player
-
-        player_deck = []
-        for card in range(card_per_player):
-            player_deck.append(deck.pop())
-        player_deck.sort(reverse=True)
-
-        message = Message(
-            origin=machine_info["ADDRESS"],
-            destiny=player_info["ADDRESS"],
-            move_info={"info": "deck", "deck": player_deck},
-        )
-
-        net.send_message(
-            message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
-        )  # manda a carta para o jogador da vez
-
-        print(f"Deu as cartas para o jogador {player+2}\n")
-
-        recv_message = net.receive_message(machine_info["RECV_PORT"])
-        if (
-            recv_message["origin"] == machine_info["ADDRESS"]
-        ):  # espera chegar em todo mundo antes de enviar a proxima mensagem
-            continue
-
-    player_deck = []
-
-    # pega o resto das cartas
-    for card in range(len(deck)):
-        player_deck.append(deck.pop())
-    player_deck.sort(reverse=True)
+    player_deck = game.deal_cards(players_qtd, deck, machine_info)
 
     print(f"O Deck do jogador {machine_number} é\n")
     for c in player_deck:
@@ -65,6 +32,7 @@ if machine_number == 1:
     net.send_message(
         message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
     )  # faz a primeira jogada
+
 
 while 1:
     recv_message = net.receive_message(machine_info["RECV_PORT"])
