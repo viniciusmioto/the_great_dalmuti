@@ -1,4 +1,5 @@
 import os
+import gameplay as game
 
 font_colour = {
     "black": "\033[1;30m",
@@ -68,9 +69,9 @@ def show_deck(machine_number, player_deck, deck_type):
 
     previous_number = None
     for card in player_deck:
-        if card[0] != previous_number:
+        if card != previous_number:
             print()
-        print_deck(card, color, new_line=False)
-        previous_number = card[0]
+        print_deck(f"[{card}|{game.cards[card]}]", color, new_line=False)
+        previous_number = card
 
     print("\n")

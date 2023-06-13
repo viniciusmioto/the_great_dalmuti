@@ -4,34 +4,33 @@ import communication as net
 import machines as machine
 from communication import Message
 
-cards = [
-    (13, "Jester 🃏"),
-    (12, "Peasant 🌾"),
-    (11, "Stonecutter 🪨"),
-    (10, "Shepherdess 🐑"),
-    (9, "Cook 🍴"),
-    (8, "Mason 🛠️"),
-    (7, "Seamstress 🧵"),
-    (6, "Knight 🗡️"),
-    (5, "Abbess 📿"),
-    (4, "Baroness 🪙"),
-    (3, "Earl Marshal 🛡️"),
-    (2, "Archbishop ⛪"),
-    (1, "The Great Dalmuti 👑"),
-]
+cards = {
+    13: "Jester 🃏",
+    12: "Peasant 🌾",
+    11: "Stonecutter 🪨",
+    10: "Shepherdess 🐑",
+    9: "Cook 🍴",
+    8: "Mason 🛠️ ",
+    7: "Seamstress 🧵",
+    6: "Knight 🗡️ ",
+    5: "Abbess 📿",
+    4: "Baroness 🪙",
+    3: "Earl Marshal 🛡️ ",
+    2: "Archbishop ⛪",
+    1: "The Great Dalmuti 👑",
+}
 
 
 def get_cards():
     # define as cartas do deck
     deck = []
-    # adiciona as cartas no deck
-    for rank, name in cards:
+
+    for rank in cards:
         if rank == 13:  # existem apenas dois jesters
-            deck.append((rank, name))
-            deck.append((rank, name))
-        else:
-            for _ in range(rank):
-                deck.append((rank, name))
+            deck.extend([13, 13])
+        else: # adiciona a quantidade de cartas de acordo com o rank
+            deck.extend([rank] * rank)
+    
     # embaralha o deck
     random.shuffle(deck)
     return deck
@@ -52,18 +51,18 @@ def verify_cards(selected_cards):
     # Obtem o número de referência para comparação
 
     # se o primeiro não for um Jester, ele é o número de referência
-    if selected_cards[0][0] != 13:
-        reference_number = selected_cards[0][0]
+    if selected_cards[0] != 13:
+        reference_number = selected_cards[0]
     # se o primeiro for um Jester, mas a lista tem tamanho 2
     elif len(selected_cards) == 2:
         return True
     # se o segundo não for um Jester, ele é o número de referência
-    elif selected_cards[1][0] != 13:
-        reference_number = selected_cards[1][0]
+    elif selected_cards[1] != 13:
+        reference_number = selected_cards[1]
 
     # verifica se o número de referência é igual ao número das outras cartas
     for card in selected_cards[1:]:
-        if card[0] != reference_number and card[0] != 13:
+        if card != reference_number and card != 13:
             return False
 
     return True
@@ -113,7 +112,7 @@ def make_move(machine_number, player_deck, table_hand=None):
         ui.show_deck(machine_number, player_deck, "hand")
 
         player_move = input(
-            "Escolha a carta ('0' - conclui seleção; 'p' - passa a vez):  "
+            "Escolha a carta ('c' - conclui; 'p' - passa a vez, 'u' - desfaz seleção):  "
         )
 
         if player_move.lower() == "0":
@@ -127,13 +126,15 @@ def make_move(machine_number, player_deck, table_hand=None):
         elif player_move.lower() == "p":
             undo_move(player_deck, selected_cards)
             break
+        elif player_move.lower() == "u":
+            undo_move(player_deck, selected_cards)
 
         # valida a jogada
         try:
             card_number = int(player_move)
             if 1 <= card_number <= 13:
                 card = next(
-                    (card for card in player_deck if card[0] == card_number), None
+                    (card for card in player_deck if card == card_number), None
                 )
                 if card:
                     selected_cards.append(card)
@@ -154,6 +155,7 @@ def make_move(machine_number, player_deck, table_hand=None):
 
         ui.show_deck(machine_number, selected_cards, "selection")
 
+    # limpa a tela, mostra deck e descarte (se houver)
     ui.clear_screen()
 
     if len(selected_cards) == 0:
@@ -223,10 +225,10 @@ def get_move_info(deck):
 
     # descobre o rank do oponente
     # descartou apenas uma carta ou não é um Jester
-    if deck_size == 1 or deck[0][0] != 13:
-        reference_number = deck[0][0]
+    if deck_size == 1 or deck[0] != 13:
+        reference_number = deck[0]
     # Se o primeiro for um Jester, mas a lista tem tamanho 2
-    elif deck_size == 2 or deck[1][0] != 13:
-        reference_number = deck[1][0]
+    elif deck_size == 2 or deck[1] != 13:
+        reference_number = deck[1]
 
     return {"amount": deck_size, "rank": reference_number}
