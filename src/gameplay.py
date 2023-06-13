@@ -111,9 +111,9 @@ def make_move(machine_number, player_deck, table_hand=None):
     while True:
         ui.show_deck(machine_number, player_deck, "hand")
 
-        player_move = input("Selecione a carta ou digite 'fim' para encerrar:  ")
+        player_move = input("Escolha a carta ('0' - conclui seleção; 'p' - passa a vez):  ")
 
-        if player_move.lower() == "fim":
+        if player_move.lower() == "0":
             if table_hand:
                 if verify_move(get_move_info(selected_cards), table_hand):
                     break
@@ -121,6 +121,9 @@ def make_move(machine_number, player_deck, table_hand=None):
                     undo_move(player_deck, selected_cards)
             else:
                 break
+        elif player_move.lower() == "p":
+            undo_move(player_deck, selected_cards)
+            break
 
 
         # valida a jogada
@@ -153,11 +156,11 @@ def make_move(machine_number, player_deck, table_hand=None):
 
     if len(selected_cards) == 0:
         print(f"Jogador {machine_number} passou a vez.\n")
-        return selected_cards
-
-    ui.show_deck(machine_number, selected_cards, "discard")
+    else:
+        ui.show_deck(machine_number, selected_cards, "discard")
+    
     ui.show_deck(machine_number, player_deck, "hand")
-
+    
     return selected_cards
 
 
