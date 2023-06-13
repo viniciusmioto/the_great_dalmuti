@@ -28,9 +28,9 @@ def get_cards():
     for rank in cards:
         if rank == 13:  # existem apenas dois jesters
             deck.extend([13, 13])
-        else: # adiciona a quantidade de cartas de acordo com o rank
+        else:  # adiciona a quantidade de cartas de acordo com o rank
             deck.extend([rank] * rank)
-    
+
     # embaralha o deck
     random.shuffle(deck)
     return deck
@@ -68,6 +68,30 @@ def verify_cards(selected_cards):
     return True
 
 
+def get_move_info(owner, deck):
+    """
+    -> Obtém as informações da jogada
+    :param owner: dono da jogada
+    :param deck: cartas selecionadas
+    :return: dict {owner, amount, rank}
+    """
+    # obtém o tamanho do descarte
+    deck_size = len(deck)
+
+    if deck_size == 0:
+        return {"owner": owner, "amount": 0, "rank": 0}
+
+    # descobre o rank do oponente
+    # descartou apenas uma carta ou não é um Jester
+    if deck_size == 1 or deck[0] != 13:
+        reference_number = deck[0]
+    # Se o primeiro for um Jester, mas a lista tem tamanho 2
+    elif deck_size == 2 or deck[1] != 13:
+        reference_number = deck[1]
+
+    return {"owner": owner, "amount": deck_size, "rank": reference_number}
+
+
 def verify_move(player_move, table_hand):
     """
     -> Verifica a jogada em relação a mesa
@@ -99,7 +123,7 @@ def undo_move(player_deck, selected_cards):
     selected_cards.clear()
 
 
-def make_move(machine_number, player_deck, table_hand=None):
+def make_move(machine_info, player_deck, table_hand=None):
     """
     -> Realiza a jogada do jogador da vez
     :param player_deck: cartas do jogador
@@ -109,15 +133,17 @@ def make_move(machine_number, player_deck, table_hand=None):
     selected_cards = []
 
     while True:
-        ui.show_deck(machine_number, player_deck, "hand")
+        ui.show_deck(machine_info, player_deck, "hand")
 
         player_move = input(
             "Escolha a carta ('c' - conclui; 'p' - passa a vez, 'u' - desfaz seleção):  "
         )
 
-        if player_move.lower() == "0":
+        if player_move.lower() == "c":
             if table_hand:
-                if verify_move(get_move_info(selected_cards), table_hand):
+                if verify_move(
+                    get_move_info(machine_info["NUMBER"], selected_cards), table_hand
+                ):
                     break
                 else:
                     undo_move(player_deck, selected_cards)
@@ -133,9 +159,7 @@ def make_move(machine_number, player_deck, table_hand=None):
         try:
             card_number = int(player_move)
             if 1 <= card_number <= 13:
-                card = next(
-                    (card for card in player_deck if card == card_number), None
-                )
+                card = next((card for card in player_deck if card == card_number), None)
                 if card:
                     selected_cards.append(card)
 
@@ -151,19 +175,20 @@ def make_move(machine_number, player_deck, table_hand=None):
             else:
                 ui.print_warning("Número de carta inválido.")
         except ValueError:
-            ui.print_warning("Entrada inválida. Tente novamente.")
+            if player_move != "u":
+                ui.print_warning("Entrada inválida. Tente novamente.")
 
-        ui.show_deck(machine_number, selected_cards, "selection")
+        ui.show_deck(machine_info, selected_cards, "selection")
 
     # limpa a tela, mostra deck e descarte (se houver)
     ui.clear_screen()
 
     if len(selected_cards) == 0:
-        print(f"Jogador {machine_number} passou a vez.\n")
+        print(f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) passou a vez.\n")
     else:
-        ui.show_deck(machine_number, selected_cards, "discard")
+        ui.show_deck(machine_info, selected_cards, "discard")
 
-    ui.show_deck(machine_number, player_deck, "hand")
+    ui.show_deck(machine_info, player_deck, "hand")
 
     return selected_cards
 
@@ -192,7 +217,7 @@ def deal_cards(players_qtd, deck, machine_info):
         message = Message(
             origin=machine_info["ADDRESS"],
             destiny=player_info["ADDRESS"],
-            number_from=machine_info["number"],
+            number_from=machine_info["NUMBER"],
             move_info={"info": "deck", "deck": opponent_deck},
         )
 
@@ -214,21 +239,3 @@ def deal_cards(players_qtd, deck, machine_info):
     deck.clear()
 
     return dealer_deck
-
-
-def get_move_info(deck):
-    # obtém o tamanho do descarte
-    deck_size = len(deck)
-
-    if deck_size == 0:
-        return {"amount": 0, "rank": 0}
-
-    # descobre o rank do oponente
-    # descartou apenas uma carta ou não é um Jester
-    if deck_size == 1 or deck[0] != 13:
-        reference_number = deck[0]
-    # Se o primeiro for um Jester, mas a lista tem tamanho 2
-    elif deck_size == 2 or deck[1] != 13:
-        reference_number = deck[1]
-
-    return {"amount": deck_size, "rank": reference_number}

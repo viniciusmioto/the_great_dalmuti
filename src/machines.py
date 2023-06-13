@@ -17,7 +17,7 @@ def get_machine_info(num):
 
     # Parse the config lines and store the data in a dictionary
     config = {}
-    config["number"] = num
+    config["NUMBER"] = num
     for line in config_lines:
         line = line.strip()
         if line.startswith(('ADDRESS', 'SEND_ADDRESS', 'CLASS')):

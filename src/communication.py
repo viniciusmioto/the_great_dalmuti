@@ -54,7 +54,7 @@ def receive_message(port):
 def send_token(machine_info):
     message = Message(
         origin=machine_info["ADDRESS"],
-        number_from=machine_info["number"],
+        number_from=machine_info['NUMBER'],
         move_info="token",
         receive_confirm=1,
     )
@@ -72,7 +72,7 @@ def send_player_move(machine_info, player_move):
 
     message = Message(
         origin=machine_info["ADDRESS"],
-        number_from=machine_info["number"],
+        number_from=machine_info['NUMBER'],
         move_info=move,
     )
 

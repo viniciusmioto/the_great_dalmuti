@@ -19,6 +19,10 @@ def font(c):
     return font_colour[c]
 
 
+def clear_screen():
+    os.system("cls" if os.name == "nt" else "clear")
+
+
 def print_warning(msg):
     print(f'{font("yellow")}WARNING: {msg}{font("clear")}')
 
@@ -28,15 +32,15 @@ def print_error(msg):
 
 
 def print_success(msg):
-    print(f'{font("green")}SUCCESS: {msg}{font("clear")}')
+    print(f'{font("green")}{msg}{font("clear")}')
 
 
 def print_info(msg):
     print(f'{font("cyan")}INFO: {msg}{font("clear")}')
 
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+def print_table(msg):
+    print(f'{font("bold")}MESA|| {msg}{font("clear")}')
 
 
 def print_deck(deck, font_color, new_line=True):
@@ -44,7 +48,7 @@ def print_deck(deck, font_color, new_line=True):
     -> This function print the deck
     :param deck: list of cards
     :return: print the deck
-    """ 
+    """
 
     if new_line:
         print(f'{font(font_color)}{deck}{font("clear")}')
@@ -52,13 +56,12 @@ def print_deck(deck, font_color, new_line=True):
         print(f'{font(font_color)}{deck}{font("clear")}', end=" ")
 
 
-def show_deck(machine_number, player_deck, deck_type):
-
+def show_deck(machine_info, player_deck, deck_type):
     if deck_type == "hand":
         color = "purple"
-        print(f"Deck do jogador {machine_number}:")
+        print(f"Seu deck ({machine_info['NUMBER']}| {machine_info['CLASS']}):")
     elif deck_type == "opponent":
-        print(f"O jogador {machine_number} descartou:")
+        print(f"O jogador {machine_info['NUMBER']}| {machine_info['CLASS']} descartou:")
         color = "cyan"
     elif deck_type == "selection":
         print(f"Cartas selecionadas:")
