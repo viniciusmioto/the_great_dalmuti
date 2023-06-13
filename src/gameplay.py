@@ -20,7 +20,7 @@ def get_cards():
         (4, "Baroness"),
         (3, "Earl Marshal"),
         (2, "Archbishop"),
-        (1, "The Great Dalmuti")
+        (1, "The Great Dalmuti"),
     ]
     deck = []
     # adiciona as cartas no deck
@@ -37,12 +37,19 @@ def get_cards():
 
 
 def verify_cards(selected_cards):
+    """
+    -> Verifica as cartas adicionadas a seleção para descarte
+    Leva em consideração apenas a seleção, não a mesa
+    :param selected_cards: cartas selecionadas
+    :return: True se a seleção for válida, False se não for
+    """
+
     # Lista menor que 2 não precisa de verificação
     if len(selected_cards) < 2:
         return True
 
     # Obtem o número de referência para comparação
-    
+
     # Se o primeiro não for um Jester, ele é o número de referência
     if selected_cards[0][0] != 13:
         reference_number = selected_cards[0][0]
@@ -61,7 +68,26 @@ def verify_cards(selected_cards):
     return True
 
 
-def make_move(machine_number, player_deck):
+def verify_move(player_move, opponent_move):
+    """
+    -> Verifica a jogada em relação a mesa
+    :param selected_cards: cartas selecionadas
+    :return: True se a jogada for válida, False se não for
+    """
+
+    if (
+        player_move["amount"] != opponent_move["amount"]
+        and opponent_move["amount"] != 0
+    ):
+        return False
+
+    if player_move["rank"] > opponent_move["rank"]:
+        return False
+
+    return True
+
+
+def make_move(machine_number, player_deck, opponent_move=None):
     """
     -> Realiza a jogada do jogador da vez
     :param player_deck: cartas do jogador
@@ -73,9 +99,7 @@ def make_move(machine_number, player_deck):
     while True:
         ui.show_deck(machine_number, player_deck, "hand")
 
-        player_move = input(
-            "\nEscolha suas cartas para jogar (ou digite 'fim' para encerrar): \n"
-        )
+        player_move = input("Selecione a carta ou digite 'fim' para encerrar:  ")
 
         if player_move.lower() == "fim":
             break
@@ -94,7 +118,9 @@ def make_move(machine_number, player_deck):
                         player_deck.remove(card)
                     else:
                         selected_cards.remove(card)
-                        ui.print_warning("Cartas não possuem o mesmo número ou não são Jesters.")
+                        ui.print_warning(
+                            "Cartas não possuem o mesmo número ou não são Jesters."
+                        )
                 else:
                     ui.print_warning("Carta não pertence ao seu deck.")
             else:
@@ -106,8 +132,17 @@ def make_move(machine_number, player_deck):
 
     ui.clear_screen()
 
-    ui.show_deck(machine_number, selected_cards, "discard")
+    if opponent_move:
+        if verify_move(get_move_info(selected_cards), opponent_move):
+            print("VÁLIDA!")
+        else:
+            print("JOGADA INVÁLIDA!!!!!!!!!!!!!")
 
+    if len(selected_cards) == 0:
+        print(f"Jogador {machine_number} passou a vez.\n")
+        return selected_cards
+
+    ui.show_deck(machine_number, selected_cards, "discard")
     ui.show_deck(machine_number, player_deck, "hand")
 
     return selected_cards
@@ -122,7 +157,7 @@ def deal_cards(players_qtd, deck, machine_info):
     :return: cartas do dealer
     """
 
-    card_per_player = 80 // players_qtd 
+    card_per_player = 80 // players_qtd
 
     for player in range(players_qtd - 1):
         player_info = machine.get_machine_config(
@@ -158,3 +193,21 @@ def deal_cards(players_qtd, deck, machine_info):
     deck.clear()
 
     return dealer_deck
+
+
+def get_move_info(deck):
+    # obtém o tamanho do descarte
+    deck_size = len(deck)
+
+    if deck_size == 0:
+        return {"amount": 0, "rank": 0}
+
+    # descobre o rank do oponente
+    # descartou apenas uma carta ou não é um Jester
+    if deck_size == 1 or deck[0][0] != 13:
+        reference_number = deck[0][0]
+    # Se o primeiro for um Jester, mas a lista tem tamanho 2
+    elif deck_size == 2 or deck[1][0] != 13:
+        reference_number = deck[1][0]
+
+    return {"amount": deck_size, "rank": reference_number}

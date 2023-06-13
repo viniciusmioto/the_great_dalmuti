@@ -4,10 +4,11 @@ import communication as net
 import interface as ui
 
 
-machine_number = int(input("Número da Máquina: \n"))
+machine_number = int(input("Número da Máquina:"))
 machine_info = machine.get_machine_config(machine_number)
 players_qtd = machine.get_players_amout()
 player_deck = []
+opponent_move = {}
 deck = game.get_cards()
 
 # se for a primeira maquina, faz o carteado (dealer)
@@ -44,6 +45,8 @@ while True:
         elif recv_message["move_info"]["info"] == "move":
             ui.show_deck(recv_message["move_info"]["machine_number"], recv_message["move_info"]["player_move"], "opponent")
 
+            opponent_move = game.get_move_info(recv_message["move_info"]["player_move"])
+
         net.send_message(
             recv_message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
         )
@@ -56,6 +59,6 @@ while True:
 
     # esta com o bastao e deve fazer a jogada
     else:
-        player_move = game.make_move(machine_number, player_deck)
+        player_move = game.make_move(machine_number, player_deck, opponent_move)
 
         net.send_player_move(machine_info, machine_number, player_move)
