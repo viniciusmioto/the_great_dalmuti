@@ -41,12 +41,12 @@ def receive_message(port):
 
 def send_token(machine_info):
     message = Message(
-        origin=machine_info["ADDRESS"], move_info="bastao", receive_confirm=1
+        origin=machine_info["ADDRESS"], move_info="token", receive_confirm=1
     )
 
     send_message(
         message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
-    )  # passou o bastao
+    )  # passou o token
 
 
 def send_player_move(machine_info, machine_number, player_move):

@@ -44,23 +44,23 @@ def verify_cards(selected_cards):
     :return: True se a seleção for válida, False se não for
     """
 
-    # Lista menor que 2 não precisa de verificação
+    # lista menor que 2 não precisa de verificação
     if len(selected_cards) < 2:
         return True
 
     # Obtem o número de referência para comparação
 
-    # Se o primeiro não for um Jester, ele é o número de referência
+    # se o primeiro não for um Jester, ele é o número de referência
     if selected_cards[0][0] != 13:
         reference_number = selected_cards[0][0]
-    # Se o primeiro for um Jester, mas a lista tem tamanho 2
+    # se o primeiro for um Jester, mas a lista tem tamanho 2
     elif len(selected_cards) == 2:
         return True
-    # Se o segundo não for um Jester, ele é o número de referência
+    # se o segundo não for um Jester, ele é o número de referência
     elif selected_cards[1][0] != 13:
         reference_number = selected_cards[1][0]
 
-    # Check if all tuples in the list have the same number as the reference number
+    # verifica se o número de referência é igual ao número das outras cartas
     for card in selected_cards[1:]:
         if card[0] != reference_number and card[0] != 13:
             return False
@@ -68,7 +68,7 @@ def verify_cards(selected_cards):
     return True
 
 
-def verify_move(player_move, opponent_move):
+def verify_move(player_move, table_hand):
     """
     -> Verifica a jogada em relação a mesa
     :param selected_cards: cartas selecionadas
@@ -76,18 +76,18 @@ def verify_move(player_move, opponent_move):
     """
 
     if (
-        player_move["amount"] != opponent_move["amount"]
-        and opponent_move["amount"] != 0
+        player_move["amount"] != table_hand["amount"]
+        and table_hand["amount"] != 0
     ):
         return False
 
-    if player_move["rank"] > opponent_move["rank"]:
+    if player_move["rank"] >= table_hand["rank"]:
         return False
 
     return True
 
 
-def make_move(machine_number, player_deck, opponent_move=None):
+def make_move(machine_number, player_deck, table_hand=None):
     """
     -> Realiza a jogada do jogador da vez
     :param player_deck: cartas do jogador
@@ -132,11 +132,13 @@ def make_move(machine_number, player_deck, opponent_move=None):
 
     ui.clear_screen()
 
-    if opponent_move:
-        if verify_move(get_move_info(selected_cards), opponent_move):
+    if table_hand:
+        if verify_move(get_move_info(selected_cards), table_hand):
             print("VÁLIDA!")
         else:
             print("JOGADA INVÁLIDA!!!!!!!!!!!!!")
+
+    print(table_hand)
 
     if len(selected_cards) == 0:
         print(f"Jogador {machine_number} passou a vez.\n")

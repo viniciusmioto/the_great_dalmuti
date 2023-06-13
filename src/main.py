@@ -8,7 +8,7 @@ machine_number = int(input("Número da Máquina:"))
 machine_info = machine.get_machine_config(machine_number)
 players_qtd = machine.get_players_amout()
 player_deck = []
-opponent_move = {}
+table_hand = {}
 deck = game.get_cards()
 
 # se for a primeira maquina, faz o carteado (dealer)
@@ -26,10 +26,10 @@ while True:
     recv_message = net.receive_message(machine_info["RECV_PORT"])
     recv_message["receive_confirm"] = 1
 
-    # se a mensagem nao for da propria maquina ou for diferente do bastao, passa pra frente
+    # se a mensagem nao for da propria maquina ou for diferente do token, passa pra frente
     if (
         recv_message["origin"] != machine_info["ADDRESS"]
-        and recv_message["move_info"] != "bastao"
+        and recv_message["move_info"] != "token"
     ):
         # carteado: verifica se o destino está correto e se contem o deck
         if (
@@ -45,20 +45,21 @@ while True:
         elif recv_message["move_info"]["info"] == "move":
             ui.show_deck(recv_message["move_info"]["machine_number"], recv_message["move_info"]["player_move"], "opponent")
 
-            opponent_move = game.get_move_info(recv_message["move_info"]["player_move"])
+            if recv_message["move_info"]["player_move"]:
+                table_hand = game.get_move_info(recv_message["move_info"]["player_move"])
 
         net.send_message(
             recv_message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
         )
 
-    # se recebeu a mensagem que enviou, então passa o bastao
+    # se recebeu a mensagem que enviou, então passa o token
     elif recv_message["origin"] == machine_info["ADDRESS"]:
         print(f"O jogador {machine_number} finalizou a jogada...\n")
 
         net.send_token(machine_info)
 
-    # esta com o bastao e deve fazer a jogada
+    # esta com o token e deve fazer a jogada
     else:
-        player_move = game.make_move(machine_number, player_deck, opponent_move)
+        player_move = game.make_move(machine_number, player_deck, table_hand)
 
         net.send_player_move(machine_info, machine_number, player_move)
