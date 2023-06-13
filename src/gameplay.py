@@ -75,16 +75,28 @@ def verify_move(player_move, table_hand):
     :return: True se a jogada for válida, False se não for
     """
 
-    if (
-        player_move["amount"] != table_hand["amount"]
-        and table_hand["amount"] != 0
-    ):
+    if player_move["amount"] != table_hand["amount"] and table_hand["amount"] != 0:
         return False
 
     if player_move["rank"] >= table_hand["rank"]:
         return False
 
     return True
+
+
+def undo_move(player_deck, selected_cards):
+    """
+    -> Desfaz a jogada do jogador
+    :param player_deck: cartas do jogador
+    :param selected_cards: cartas selecionadas
+    :return: cartas do jogador e da mesa
+    """
+
+    for card in selected_cards:
+        player_deck.append(card)
+    player_deck.sort(reverse=True)
+
+    selected_cards.clear()
 
 
 def make_move(machine_number, player_deck, table_hand=None):
@@ -102,7 +114,14 @@ def make_move(machine_number, player_deck, table_hand=None):
         player_move = input("Selecione a carta ou digite 'fim' para encerrar:  ")
 
         if player_move.lower() == "fim":
-            break
+            if table_hand:
+                if verify_move(get_move_info(selected_cards), table_hand):
+                    break
+                else:
+                    undo_move(player_deck, selected_cards)
+            else:
+                break
+
 
         # valida a jogada
         try:
@@ -126,19 +145,11 @@ def make_move(machine_number, player_deck, table_hand=None):
             else:
                 ui.print_warning("Número de carta inválido.")
         except ValueError:
-            ui.print_warning("Entrada inválida.")
+            ui.print_warning("Entrada inválida. Tente novamente.")
 
         ui.show_deck(machine_number, selected_cards, "selection")
 
     ui.clear_screen()
-
-    if table_hand:
-        if verify_move(get_move_info(selected_cards), table_hand):
-            print("VÁLIDA!")
-        else:
-            print("JOGADA INVÁLIDA!!!!!!!!!!!!!")
-
-    print(table_hand)
 
     if len(selected_cards) == 0:
         print(f"Jogador {machine_number} passou a vez.\n")

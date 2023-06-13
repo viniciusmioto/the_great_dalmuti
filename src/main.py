@@ -4,7 +4,7 @@ import communication as net
 import interface as ui
 
 
-machine_number = int(input("Número da Máquina:"))
+machine_number = int(input("Número da Máquina:  "))
 machine_info = machine.get_machine_config(machine_number)
 players_qtd = machine.get_players_amout()
 player_deck = []
