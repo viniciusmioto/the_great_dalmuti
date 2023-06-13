@@ -12,14 +12,15 @@ table_hand = {}
 deck = game.get_cards()
 
 # se for a primeira maquina, faz o carteado (dealer)
-if machine_number == 1:
+if machine_info["number"] == 1:
+    print(machine_info)
     # faz o carteado
     player_deck = game.deal_cards(players_qtd, deck, machine_info)
 
     # faz a primeira jogada
-    player_move = game.make_move(machine_number, player_deck)
+    player_move = game.make_move(machine_info["number"], player_deck)
 
-    net.send_player_move(machine_info, machine_number, player_move)
+    net.send_player_move(machine_info, machine_info["number"], player_move)
 
 
 while True:
@@ -39,7 +40,7 @@ while True:
             # recebe o deck e mostra na tela
             player_deck = recv_message["move_info"]["deck"]
 
-            ui.show_deck(machine_number, player_deck, "hand")
+            ui.show_deck(machine_info["number"], player_deck, "hand")
 
         # jogada: verifica a jogada e mostra na tela
         elif recv_message["move_info"]["info"] == "move":
@@ -54,12 +55,12 @@ while True:
 
     # se recebeu a mensagem que enviou, então passa o token
     elif recv_message["origin"] == machine_info["ADDRESS"]:
-        print(f"O jogador {machine_number} ({machine_info['CLASS']}) finalizou a jogada...\n")
+        print(f"O jogador {machine_info['number']} ({machine_info['CLASS']}) finalizou a jogada...\n")
 
         net.send_token(machine_info)
 
     # esta com o token e deve fazer a jogada
     else:
-        player_move = game.make_move(machine_number, player_deck, table_hand)
+        player_move = game.make_move(machine_info["number"], player_deck, table_hand)
 
-        net.send_player_move(machine_info, machine_number, player_move)
+        net.send_player_move(machine_info, machine_info["number"], player_move)
