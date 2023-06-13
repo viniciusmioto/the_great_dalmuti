@@ -2,7 +2,7 @@ import random
 import interface as ui
 import communication as net
 import machines as machine
-from message import Message
+from communication import Message
 
 
 def get_cards():
@@ -176,7 +176,7 @@ def deal_cards(players_qtd, deck, machine_info):
     card_per_player = 80 // players_qtd
 
     for player in range(players_qtd - 1):
-        player_info = machine.get_machine_config(
+        player_info = machine.get_machine_info(
             player + 2
         )  # player + 1 para skipar o primeiro player
 
@@ -188,6 +188,7 @@ def deal_cards(players_qtd, deck, machine_info):
         message = Message(
             origin=machine_info["ADDRESS"],
             destiny=player_info["ADDRESS"],
+            number_from=machine_info["number"],
             move_info={"info": "deck", "deck": opponent_deck},
         )
 

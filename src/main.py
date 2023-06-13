@@ -5,7 +5,7 @@ import interface as ui
 
 
 machine_number = int(input("Número da Máquina:  "))
-machine_info = machine.get_machine_config(machine_number)
+machine_info = machine.get_machine_info(machine_number)
 players_qtd = machine.get_players_amout()
 player_deck = []
 table_hand = {}
@@ -13,14 +13,13 @@ deck = game.get_cards()
 
 # se for a primeira maquina, faz o carteado (dealer)
 if machine_info["number"] == 1:
-    print(machine_info)
     # faz o carteado
     player_deck = game.deal_cards(players_qtd, deck, machine_info)
 
     # faz a primeira jogada
     player_move = game.make_move(machine_info["number"], player_deck)
 
-    net.send_player_move(machine_info, machine_info["number"], player_move)
+    net.send_player_move(machine_info, player_move)
 
 
 while True:
@@ -44,7 +43,9 @@ while True:
 
         # jogada: verifica a jogada e mostra na tela
         elif recv_message["move_info"]["info"] == "move":
-            ui.show_deck(recv_message["move_info"]["machine_number"], recv_message["move_info"]["player_move"], "opponent")
+            opponent_info = machine.get_machine_info(recv_message["number_from"])
+            
+            ui.show_deck(opponent_info["number"], recv_message["move_info"]["player_move"], "opponent")
 
             if recv_message["move_info"]["player_move"]:
                 table_hand = game.get_move_info(recv_message["move_info"]["player_move"])
@@ -63,4 +64,4 @@ while True:
     else:
         player_move = game.make_move(machine_info["number"], player_deck, table_hand)
 
-        net.send_player_move(machine_info, machine_info["number"], player_move)
+        net.send_player_move(machine_info, player_move)

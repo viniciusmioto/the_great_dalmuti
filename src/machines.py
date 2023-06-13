@@ -1,4 +1,4 @@
-def get_machine_config(num):
+def get_machine_info(num):
     with open('config.txt', 'r') as file:
         lines = file.readlines()
     

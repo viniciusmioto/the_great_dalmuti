@@ -1,6 +1,18 @@
 import socket
 import ast
-from message import Message
+
+class Message:
+    def __init__(self, origin, number_from, destiny=None, move_info=None, receive_confirm=0):
+        self.init_marker = "01110"
+        self.origin = origin
+        self.number_from = number_from
+        self.destiny = destiny
+        self.move_info = move_info
+        self.receive_confirm = receive_confirm
+        self.end_marker = "10001"
+
+    def __str__(self):
+        return str(self.__dict__)
 
 
 def send_message(message, address, port):
@@ -41,7 +53,10 @@ def receive_message(port):
 
 def send_token(machine_info):
     message = Message(
-        origin=machine_info["ADDRESS"], move_info="token", receive_confirm=1
+        origin=machine_info["ADDRESS"],
+        number_from=machine_info["number"],
+        move_info="token",
+        receive_confirm=1,
     )
 
     send_message(
@@ -49,13 +64,16 @@ def send_token(machine_info):
     )  # passou o token
 
 
-def send_player_move(machine_info, machine_number, player_move):
+def send_player_move(machine_info, player_move):
     move = {
         "info": "move",
-        "machine_number": machine_number,
         "player_move": player_move,
     }
 
-    message = Message(origin=machine_info["ADDRESS"], move_info=move)
+    message = Message(
+        origin=machine_info["ADDRESS"],
+        number_from=machine_info["number"],
+        move_info=move,
+    )
 
     send_message(message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"])
