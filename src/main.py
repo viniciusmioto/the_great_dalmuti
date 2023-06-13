@@ -54,7 +54,7 @@ while True:
 
     # se recebeu a mensagem que enviou, então passa o token
     elif recv_message["origin"] == machine_info["ADDRESS"]:
-        print(f"O jogador {machine_number} finalizou a jogada...\n")
+        print(f"O jogador {machine_number} ({machine_info['CLASS']}) finalizou a jogada...\n")
 
         net.send_token(machine_info)
 

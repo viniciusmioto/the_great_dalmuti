@@ -19,7 +19,7 @@ def get_machine_config(num):
     config = {}
     for line in config_lines:
         line = line.strip()
-        if line.startswith(('ADDRESS', 'SEND_ADDRESS')):
+        if line.startswith(('ADDRESS', 'SEND_ADDRESS', 'CLASS')):
             key, value = line.split()
             config[key] = value
         elif line.startswith(('SEND_PORT', 'RECV_PORT')):
