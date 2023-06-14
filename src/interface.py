@@ -1,31 +1,33 @@
 import os
 import gameplay as game
 
-font_colour = {
-    "black": "\033[1;30m",
-    "purple": "\033[1;35m",
-    "green": "\033[1;32m",
-    "yellow": "\033[1;33m",
-    "blue": "\033[1;34m",
-    "red": "\033[1;31m",
-    "cyan": "\033[1;36m",
-    "grey": "\033[1;37m",
-    "bold": "\033[;1m",
-    "clear": "\033[m",
-}
-
 
 def set_theme(theme):
     if theme == 1:
-        global font_colour 
-        
+        global font_colour
+
         font_colour = {
             "black": "\033[1;30m",
             "purple": "\033[1;31m",
+            "purple_b": "\033[7;31m",
             "green": "\033[1;32m",
             "yellow": "\033[1;33m",
             "blue": "\033[1;34m",
             "red": "\033[1;35m",
+            "cyan": "\033[1;36m",
+            "grey": "\033[1;37m",
+            "bold": "\033[;1m",
+            "clear": "\033[m",
+        }
+    else:
+        font_colour = {
+            "black": "\033[1;30m",
+            "purple": "\033[1;35m",
+            "purple_b": "\033[7;35m",
+            "green": "\033[1;32m",
+            "yellow": "\033[1;33m",
+            "blue": "\033[1;34m",
+            "red": "\033[1;31m",
             "cyan": "\033[1;36m",
             "grey": "\033[1;37m",
             "bold": "\033[;1m",
@@ -58,7 +60,7 @@ def print_info(msg):
 
 
 def print_table(msg):
-    print(f'{font("bold")}MESA|| {msg}{font("clear")}')
+    print(f'{font("purple_b")} MESA|| {msg} {font("clear")}')
 
 
 def print_deck(deck, font_color, new_line=True):

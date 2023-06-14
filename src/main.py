@@ -12,8 +12,10 @@ def main():
 
     # If an argument is provided, use it as the parameter, otherwise default to 0
     if len(sys.argv) == 2:
-        ui.set_theme(sys.argv[1])
-        
+        print(f"Using theme {sys.argv[1]}")
+        ui.set_theme(int(sys.argv[1]))
+    else:
+        ui.set_theme(0)
 
     machine_number = int(input("Número da Máquina:  "))
     machine_info = machine.get_machine_info(machine_number)
