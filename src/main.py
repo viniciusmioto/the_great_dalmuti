@@ -10,9 +10,10 @@ players_qtd = machine.get_players_amout()
 player_deck = []
 table_hand = {}
 deck = game.get_cards()
+leaderboard = []
 
 # se for a primeira maquina, faz o carteado (dealer)
-if machine_info['NUMBER'] == 1:
+if machine_info["NUMBER"] == 1:
     # faz o carteado
     player_deck = game.deal_cards(players_qtd, deck, machine_info)
 
@@ -20,10 +21,10 @@ if machine_info['NUMBER'] == 1:
     player_move = game.make_move(machine_info, player_deck)
 
     net.send_player_move(machine_info, player_move)
-    table_hand = game.get_move_info(machine_info["NUMBER"], player_move)
+    # table_hand = game.get_move_info(machine_info["NUMBER"], player_move)
 
 
-while True:
+while len(leaderboard) < players_qtd:
     recv_message = net.receive_message(machine_info["RECV_PORT"])
     recv_message["receive_confirm"] = 1
 
@@ -43,16 +44,27 @@ while True:
             ui.show_deck(machine_info, player_deck, "hand")
 
         # jogada: verifica a jogada e mostra na tela
-        elif recv_message["move_info"]["info"] == "move":
+        elif recv_message["move_info"]["info"] in ["move", "opponent_finished"]:
             opponent_info = machine.get_machine_info(recv_message["number_from"])
+
+            if (
+                recv_message["move_info"]["info"] == "opponent_finished"
+                and opponent_info["NUMBER"] not in leaderboard
+            ):
+                leaderboard.append(opponent_info["NUMBER"])
 
             # verifica se o jogador anterior realizou uma jogada
             if recv_message["move_info"]["player_move"]:
-                ui.show_deck(opponent_info, recv_message["move_info"]["player_move"], "opponent")
-                table_hand = game.get_move_info(opponent_info["NUMBER"], recv_message["move_info"]["player_move"])
-            else: # jogada vazia, passou a vez
-                print(f"O jogador {opponent_info['NUMBER']} ({opponent_info['CLASS']}) passou a vez.\n")
-            
+                ui.show_deck(
+                    opponent_info, recv_message["move_info"]["player_move"], "opponent"
+                )
+                table_hand = game.get_move_info(
+                    opponent_info["NUMBER"], recv_message["move_info"]["player_move"]
+                )
+            else:  # jogada vazia, passou a vez
+                print(
+                    f"O jogador {opponent_info['NUMBER']} ({opponent_info['CLASS']}) passou a vez.\n"
+                )
 
         net.send_message(
             recv_message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
@@ -60,19 +72,32 @@ while True:
 
     # se recebeu a mensagem que enviou, então passa o token
     elif recv_message["origin"] == machine_info["ADDRESS"]:
-        print(f"O jogador {machine_info['NUMBER']} ({machine_info['CLASS']}) finalizou a jogada...\n")
-
+        # print(f"O jogador {machine_info['NUMBER']} ({machine_info['CLASS']}) finalizou a jogada.n")
         net.send_token(machine_info)
 
     # esta com o token e deve fazer a jogada
     else:
-        if table_hand and table_hand["owner"] == machine_info["NUMBER"]:
-            ui.print_success(f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) venceu esta rodada. Inicie uma nova")
-            table_hand = {}
+        player_move = game.verify_round(
+            machine_info, player_deck, table_hand, leaderboard
+        )
+
+        if len(leaderboard) == players_qtd - 1 and machine_info["NUMBER"] not in leaderboard:
+            player_deck = []
+            leaderboard.append(machine_info["NUMBER"])
+
+        if player_deck == []:
+            net.send_player_move(machine_info, player_move, "opponent_finished")
         else:
-            ui.print_table(f"Rank: {table_hand['rank']} | Set: {table_hand['amount']} | Player: {table_hand['owner']}")
+            net.send_player_move(machine_info, player_move)
 
-        player_move = game.make_move(machine_info, player_deck, table_hand)
-
-        net.send_player_move(machine_info, player_move)
         table_hand = game.get_move_info(machine_info["NUMBER"], player_move)
+
+
+
+
+ui.clear_screen()
+# quando todos os jogadores tiverem finalizado, mostra colocação
+for i in range(len(leaderboard)):
+    ui.print_success(
+        f"O jogador ({leaderboard[i]}) ficou em {i+1}º lugar."
+    )

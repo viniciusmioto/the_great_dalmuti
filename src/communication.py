@@ -64,9 +64,9 @@ def send_token(machine_info):
     )  # passou o token
 
 
-def send_player_move(machine_info, player_move):
+def send_player_move(machine_info, player_move, move_info="move"):
     move = {
-        "info": "move",
+        "info": move_info,
         "player_move": player_move,
     }
 

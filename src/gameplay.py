@@ -36,6 +36,54 @@ def get_cards():
     return deck
 
 
+def deal_cards(players_qtd, deck, machine_info):
+    """
+    -> Distribui as cartas para todos os jogadores
+    :param players_qtd: quantidade de jogadores
+    :param deck: cartas
+    :param machine_info: informações da máquina
+    :return: cartas do dealer
+    """
+
+    card_per_player = 80 // players_qtd
+
+    for player in range(players_qtd - 1):
+        player_info = machine.get_machine_info(
+            player + 2
+        )  # player + 1 para skipar o primeiro player
+
+        opponent_deck = []
+        for card in range(card_per_player):
+            opponent_deck.append(deck.pop())
+        opponent_deck.sort(reverse=True)
+
+        message = Message(
+            origin=machine_info["ADDRESS"],
+            destiny=player_info["ADDRESS"],
+            number_from=machine_info["NUMBER"],
+            move_info={"info": "deck", "deck": opponent_deck},
+        )
+
+        net.send_message(
+            message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
+        )  # manda a carta para o jogador da vez
+
+        print(f"Deu as cartas para o jogador {player+2}\n")
+
+        recv_message = net.receive_message(machine_info["RECV_PORT"])
+        if (
+            recv_message["origin"] == machine_info["ADDRESS"]
+        ):  # espera chegar em todo mundo antes de enviar a proxima mensagem
+            continue
+
+    # pega o resto das cartas
+    dealer_deck = []
+    dealer_deck = sorted(deck, reverse=True)
+    deck.clear()
+
+    return dealer_deck
+
+
 def verify_cards(selected_cards):
     """
     -> Verifica as cartas adicionadas a seleção para descarte
@@ -123,7 +171,7 @@ def undo_move(player_deck, selected_cards):
     selected_cards.clear()
 
 
-def make_move(machine_info, player_deck, table_hand=None):
+def make_move(machine_info, player_deck, leaderboard=[], table_hand=None):
     """
     -> Realiza a jogada do jogador da vez
     :param player_deck: cartas do jogador
@@ -184,58 +232,40 @@ def make_move(machine_info, player_deck, table_hand=None):
     ui.clear_screen()
 
     if len(selected_cards) == 0:
-        print(f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) passou a vez.\n")
+        print(
+            f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) passou a vez.\n"
+        )
     else:
         ui.show_deck(machine_info, selected_cards, "discard")
 
-    ui.show_deck(machine_info, player_deck, "hand")
+    if len(player_deck) > 0:
+        ui.show_deck(machine_info, player_deck, "hand")
+    else:
+        ui.print_success(
+            f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) descartou tudo!!!\n"
+        )
+        if machine_info["NUMBER"] not in leaderboard:
+            leaderboard.append(machine_info["NUMBER"])
 
     return selected_cards
 
 
-def deal_cards(players_qtd, deck, machine_info):
-    """
-    -> Distribui as cartas para todos os jogadores
-    :param players_qtd: quantidade de jogadores
-    :param deck: cartas
-    :param machine_info: informações da máquina
-    :return: cartas do dealer
-    """
+def verify_round(machine_info, player_deck, table_hand, leaderboard):
+    player_move = {}
 
-    card_per_player = 80 // players_qtd
+    if machine_info["NUMBER"] in leaderboard:
+        ui.print_table("Você já terminou o jogo. Aguarde os outros jogadores...")
+        return player_move
 
-    for player in range(players_qtd - 1):
-        player_info = machine.get_machine_info(
-            player + 2
-        )  # player + 1 para skipar o primeiro player
-
-        opponent_deck = []
-        for card in range(card_per_player):
-            opponent_deck.append(deck.pop())
-        opponent_deck.sort(reverse=True)
-
-        message = Message(
-            origin=machine_info["ADDRESS"],
-            destiny=player_info["ADDRESS"],
-            number_from=machine_info["NUMBER"],
-            move_info={"info": "deck", "deck": opponent_deck},
+    if table_hand and table_hand["owner"] == machine_info["NUMBER"]:
+        ui.print_success(
+            f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) VENCEU esta rodada! Inicie uma nova..."
         )
+        table_hand = {}
+    else:
+        if table_hand:
+            ui.print_table(
+                f"Rank: {table_hand['rank']} | Set: {table_hand['amount']} | Player: {table_hand['owner']}"
+            )
 
-        net.send_message(
-            message, machine_info["SEND_ADDRESS"], machine_info["SEND_PORT"]
-        )  # manda a carta para o jogador da vez
-
-        print(f"Deu as cartas para o jogador {player+2}\n")
-
-        recv_message = net.receive_message(machine_info["RECV_PORT"])
-        if (
-            recv_message["origin"] == machine_info["ADDRESS"]
-        ):  # espera chegar em todo mundo antes de enviar a proxima mensagem
-            continue
-
-    # pega o resto das cartas
-    dealer_deck = []
-    dealer_deck = sorted(deck, reverse=True)
-    deck.clear()
-
-    return dealer_deck
+    return make_move(machine_info, player_deck, leaderboard, table_hand)
