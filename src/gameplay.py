@@ -22,6 +22,10 @@ cards = {
 
 
 def get_cards():
+    """
+    -> Cria o deck de cartas
+    :return: deck de cartas
+    """
     # define as cartas do deck
     deck = []
 
@@ -129,7 +133,7 @@ def get_move_info(owner, deck):
     if deck_size == 0:
         return {"owner": owner, "amount": 0, "rank": 0}
 
-    # descobre o rank do oponente
+    # descobre o rank da jogada
     # descartou apenas uma carta ou não é um Jester
     if deck_size == 1 or deck[0] != 13:
         reference_number = deck[0]
@@ -183,6 +187,7 @@ def make_move(machine_info, player_deck, leaderboard=[], table_hand=None):
     while True:
         ui.show_deck(machine_info, player_deck, "hand")
 
+        # recebe opção do jogador
         player_move = input(
             "Escolha a carta ('c' - conclui; 'p' - passa a vez, 'u' - desfaz seleção):  "
         )
@@ -231,19 +236,22 @@ def make_move(machine_info, player_deck, leaderboard=[], table_hand=None):
     # limpa a tela, mostra deck e descarte (se houver)
     ui.clear_screen()
 
+    # se não houver cartas selecionadas, passa a vez
     if len(selected_cards) == 0:
         print(
             f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) passou a vez.\n"
         )
-    else:
+    else: # mostra as cartas descartadas
         ui.show_deck(machine_info, selected_cards, "discard")
 
+    # se ainda houver cartas na mão, mostra o deck
     if len(player_deck) > 0:
         ui.show_deck(machine_info, player_deck, "hand")
-    else:
+    else: # se não houver mais cartas, mostra que o jogador concluiu
         ui.print_success(
             f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) descartou tudo!!!\n"
         )
+        # insere o jogador na lista de jogadores que terminaram o jogo
         if machine_info["NUMBER"] not in leaderboard:
             leaderboard.append(machine_info["NUMBER"])
 
@@ -251,18 +259,28 @@ def make_move(machine_info, player_deck, leaderboard=[], table_hand=None):
 
 
 def verify_round(machine_info, player_deck, table_hand, leaderboard):
+    """
+    -> Verifica a rodada, para a próxima jogada acontecer
+    :param machine_info: informações do jogador
+    :param player_deck: cartas do jogador
+    :param table_hand: cartas da mesa
+    :param leaderboard: lista de jogadores que terminaram o jogo
+    :return: cartas selecionadas de acordo com a jogada
+    """
     player_move = {}
 
+    # se o jogador já concluiu, passa a vez (aguarda)
     if machine_info["NUMBER"] in leaderboard:
         ui.print_table("Você já terminou o jogo. Aguarde os outros jogadores...")
         return player_move
 
+    # se a mão do jogador está liderando a mesa, ele venceu a rodada
     if table_hand and table_hand["owner"] == machine_info["NUMBER"]:
         ui.print_success(
             f"Você ({machine_info['NUMBER']}|{machine_info['CLASS']}) VENCEU esta rodada! Inicie uma nova..."
         )
         table_hand = {}
-    else:
+    else: 
         if table_hand:
             ui.print_table(
                 f"Rank: {table_hand['rank']} | Set: {table_hand['amount']} | Player: {table_hand['owner']}"

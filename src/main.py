@@ -72,7 +72,7 @@ while len(leaderboard) < players_qtd:
 
     # se recebeu a mensagem que enviou, então passa o token
     elif recv_message["origin"] == machine_info["ADDRESS"]:
-        # print(f"O jogador {machine_info['NUMBER']} ({machine_info['CLASS']}) finalizou a jogada.n")
+        print("Jogada finalizada, aguardando os outros...")
         net.send_token(machine_info)
 
     # esta com o token e deve fazer a jogada
