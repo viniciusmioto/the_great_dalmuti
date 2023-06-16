@@ -1,3 +1,3 @@
 # The Great Dalmuti
 
-![](game.png)
+![](./img/game.png)
