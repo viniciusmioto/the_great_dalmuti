@@ -19,10 +19,10 @@ The game is played as in a table, implemented in a **Token Ring Network**. To cr
 
 ### Execution
 
-To start the game run the following command in each machine:
+To start the game, run the following command in each machine:
 
 ```bash
 python3 main.py
 ```
 
-The game was developed and tested in UFPR laboratory machines with SSH.
+The game was developed and tested on UFPR laboratory machines with SSH.
